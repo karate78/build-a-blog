@@ -41,9 +41,9 @@ class Handler(webapp2.RequestHandler):
 
 class MainPage(Handler):
     def render_front(self, title="", blogpost="", error=""):
-        blogs = db.GqlQuery("SELECT * FROM Blogs ORDER by created DESC LIMIT 5")
 
-        self.render("front.html", title=title, blogpost=blogpost, error=error, blogs=blogs)
+
+        self.render("front.html", title=title, blogpost=blogpost, error=error)
 
     def get(self):
         self.render_front()
@@ -56,12 +56,23 @@ class MainPage(Handler):
             a = Blogs(title = title, blogpost = blogpost)
             a.put()
 
-            self.redirect("/")
+            self.redirect("/blogpage")
 
         else:
             error = "we need both a title and a blogpost!"
             self.render_front(title, blogpost, error)
 
+class BlogPage(Handler):
+    def render_blog(self):
+        blogs = db.GqlQuery("SELECT * FROM Blogs ORDER by created DESC LIMIT 5")
+
+        self.render("blogpages.html", blogs=blogs)
+
+    def get(self):
+        self.render_blog()
+
+
 app = webapp2.WSGIApplication([
-    ('/', MainPage)
+    ('/', MainPage),
+    ('/blogpage', BlogPage)
 ], debug=True)
