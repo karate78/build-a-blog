@@ -18,6 +18,7 @@ import webapp2
 import os
 import jinja2
 
+
 from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
@@ -56,13 +57,14 @@ class MainPage(Handler):
             a = Blogs(title = title, blogpost = blogpost)
             a.put()
 
-            self.redirect("/blogpage")
+            id=a.key().id()
+            self.redirect("/blog/%s" % id)
 
         else:
             error = "we need both a title and a blogpost!"
             self.render_front(title, blogpost, error)
 
-class BlogPage(Handler):
+class Blog(Handler):
     def render_blog(self):
         blogs = db.GqlQuery("SELECT * FROM Blogs ORDER by created DESC LIMIT 5")
 
@@ -70,9 +72,25 @@ class BlogPage(Handler):
 
     def get(self):
         self.render_blog()
+class ViewPostHandler(Handler):
+        def get(self, id):
+            """ Render a page with post determined by the id (via the URL/permalink) """
+
+            post = Blogs.get_by_id(int(id))
+            if post:
+                t = jinja_env.get_template("post.html")
+                response = t.render(post=post)
+            else:
+                error = "there is no post with id %s" % id
+                t = jinja_env.get_template("404.html")
+                response = t.render(error=error)
+
+            self.response.out.write(response)
+
 
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    ('/blogpage', BlogPage)
+    ('/blog', Blog),
+    webapp2.Route('/blog/<id:\d+>', ViewPostHandler)
 ], debug=True)

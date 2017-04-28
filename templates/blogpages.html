@@ -3,7 +3,7 @@
 {% block content %}
 {% for blog in blogs %}
 <div class="blog">
-<div class="blog-title">{{blog.title}}</div>
+<a href="blog/{{ blog.key().id() }}" class="blog-title">{{blog.title}}</h2>
 <pre class="blog-body">{{blog.blogpost}}</pre>
 </div>
 {% endfor %}
